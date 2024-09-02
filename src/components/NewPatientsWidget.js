@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
 import Switch from 'react-switch';
@@ -12,7 +12,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-
+import {supabase} from '../supabaseClient';
 // Register necessary chart components and plugins
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
 
@@ -35,13 +35,66 @@ const WidgetTitle = styled.h3`
   align-items: center;
 `;
 
-const NewPatientsWidget = ({ width, height }) => {
-  const [showPercentage, setShowPercentage] = useState(true);
+async function fetchNewPatientsData(timeRange, customStartDate, customEndDate) {
+    const hospitalId = '4rGAVPwMavcn6ZXQJSqynPoJKyE3';
+    const doctorId = '0c99dde8-1414-4867-9395-26ffe3355f3f';
+  
+    // Apply conditional logic to modify timeRange
+    if (timeRange && timeRange !== 'custom') {
+      if (timeRange === '1 Day') {
+        timeRange = 'single_day';
+      } else if (timeRange === '1 Week') {
+        timeRange = '1_week';
+      } else if (timeRange === '1 Month') {
+        timeRange = '1_month';
+      } else if (timeRange === '3 Months') {
+        timeRange = '3_months';
+      }
+    }
 
-  const patientData = {
-    new: 120,
-    old: 180,
+    const { data, error } = await supabase.rpc('get_patient_growth_stats', {
+      p_hospital_id: hospitalId,
+      p_doctor_id: doctorId,
+      p_date_range: timeRange,
+      p_custom_start_date: customStartDate,
+      p_custom_end_date: customEndDate,
+    });
+
+    if (error) {
+      console.error('Error fetching patient growth stats:', error);
+    } else if (data && data.length > 0) {
+      return data;
+      //console.log(data[0].old_patients);
+    }
   };
+
+const NewPatientsWidget = ({ width=200, height=100,timeRange }) => {
+  const [showPercentage, setShowPercentage] = useState(true);
+  const [patientData, setPatientData] = useState({ new: 0, old: 0 });
+
+  useEffect(() => {
+
+    async function fetchPatientGrowthStats() {
+          let timeComponent = timeRange.type;
+          let customStartDate = null;
+          let customEndDate = null;
+    
+          if (timeRange.type === 'Custom') {
+            timeComponent = 'custom';
+            customStartDate = timeRange.startDate;
+            customEndDate = timeRange.endDate;
+          }
+    
+          const data = await fetchNewPatientsData(timeComponent, customStartDate, customEndDate);
+          if (data && data.length > 0) {
+          setPatientData({
+            new: data[0].new_patients,  // Replace with actual field name
+            old: data[0].old_patients,  // Replace with actual field name
+            
+          }); }
+        }
+        fetchPatientGrowthStats();
+      }, [timeRange]);
 
   // Calculate the total sum for percentage calculation
   const total = patientData.new + patientData.old;

@@ -57,7 +57,7 @@ const DashboardCard = () => {
       <Header timeRange={timeRange} setTimeRange={setTimeRange} />
       <WidgetContainer>
         <WidgetArea x="2%" y="5%" width="12%" height="20%">
-          <VisitsWidget />
+          <VisitsWidget width={200} height={100} timeRange={timeRange} />
         </WidgetArea>
         <WidgetArea x="20%" y="5%" width="24%" height="80%">
         <LocationsWidget timeRange={timeRange} />
@@ -66,14 +66,14 @@ const DashboardCard = () => {
           <GenderWidget width={200} height={100} timeRange={timeRange}  />
         </WidgetArea>
          <WidgetArea x="47%" y="5%" width="25%" height="50%">
-           <DiscoveryWidget />
+           <DiscoveryWidget width={200} height={100} timeRange={timeRange} />
          </WidgetArea>
 
         <WidgetArea x="47%" y="60%" width="25%" height="50%">
-          <AgeGroupWidget />
+          <AgeGroupWidget width={200} height={100} timeRange={timeRange} />
         </WidgetArea>
-        <WidgetArea x="75%" y="5%" width="20%" height="70%">
-          <NewPatientsWidget />
+        <WidgetArea x="75%" y="5%" width="20%" height="50%">
+          <NewPatientsWidget width={200} height={100} timeRange={timeRange}/>
         </WidgetArea>
         {/*
         <WidgetArea x="5%" y="30%" width="20%" height="25%">
@@ -82,12 +82,10 @@ const DashboardCard = () => {
 
         <WidgetArea x="70%" y="30%" width="25%" height="25%">
           <ReasonWidget />
-        </WidgetArea>
-
-
-        <WidgetArea x="5%" y="85%" width="20%" height="15%">
-          <AttendingModeWidget />
-        </WidgetArea> */}
+  </WidgetArea> */}
+        <WidgetArea x="5%" y="85%" width="23%" height="35%">
+          <AttendingModeWidget width={200} height={100} timeRange={timeRange} />
+        </WidgetArea> 
       </WidgetContainer>
     </DashboardContainer>
   );

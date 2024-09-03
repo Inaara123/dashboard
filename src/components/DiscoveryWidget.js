@@ -8,8 +8,8 @@ const WidgetContainer = styled.div`
   padding: 20px;
   border-radius: 15px;
   color: #fff;
-  width: 250px;
-  height : 200px; /* Adjust width as needed */
+  width: ${({ width }) => width || '250px'}; /* Use prop or default */
+  height: ${({ height }) => height || '200px'}; /* Use prop or default */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
@@ -57,7 +57,7 @@ const PercentageText = styled.span`
   color: #a5a5a5;
 `;
 
-const DiscoveryWidget = () => {
+const DiscoveryWidget = ({ width, height }) => {
   const [showPercentage, setShowPercentage] = useState(true);
 
   const discoverySources = [
@@ -71,13 +71,10 @@ const DiscoveryWidget = () => {
   const total = discoverySources.reduce((sum, source) => sum + source.count, 0);
 
   return (
-    <WidgetContainer>
+    <WidgetContainer width={width} height={height}>
       <WidgetTitle>
         Discovery
         <div>
-          <span style={{ fontSize: '14px', color: '#ffffff' }}>
-            {showPercentage ? 'Show Actual' : 'Show %'}
-          </span>
           <Switch
             onChange={() => setShowPercentage(!showPercentage)}
             checked={showPercentage}
@@ -85,6 +82,8 @@ const DiscoveryWidget = () => {
             onColor="#66ff66"
             uncheckedIcon={false}
             checkedIcon={false}
+            height={20} /* Adjust the height of the toggle */
+            width={40} /* Adjust the width of the toggle */
           />
         </div>
       </WidgetTitle>

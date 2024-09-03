@@ -3,6 +3,10 @@ import Header from './components/Header';
 import DashboardCard from './components/DashboardCard';
 import SearchBar from './components/SearchBar';
 import PatientMap from './components/MapComponent';
+import { useState } from 'react';
+import FilterInputs from './components/InputCorelation';
+import Correlation from './components/Correlation';
+import CorrelationDashboard from './components/CorrelationDashboard';
 
 import './styles.css';  
 
@@ -14,6 +18,21 @@ const App = () => {
     [17.495032, 78.320560], // Patient 3
     // Add more patient coordinates here
   ];
+  const [filteredData, setFilteredData] = useState({ });
+  const handleFilterChange = (filters) => {
+    // Here you will implement the logic to filter your data based on the filters
+    // Example filtering logic:
+    const data = {};  // Replace this with your actual data
+    const results = data.filter((item) => {
+      return filters.every((filter) => {
+        // Implement filter condition based on item and filter
+        return true;  // Replace with actual condition
+      });
+    });
+    setFilteredData(results);
+  }
+
+
   return (
     <div className="app-container">
 
@@ -37,6 +56,12 @@ const App = () => {
 
           
           </div>
+        <div>
+          <CorrelationDashboard/>
+        </div>
+        <div className='corelation'>
+        <Correlation/>
+        </div>
     </div>
   );
 };

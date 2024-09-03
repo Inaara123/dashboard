@@ -25,6 +25,9 @@ const WidgetContainer = styled.div`
   width: ${({ width }) => width || '300px'}; /* Dynamic width */
   height: ${({ height }) => height || 'auto'}; /* Dynamic height */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `;
 
 const WidgetTitle = styled.h3`
@@ -35,30 +38,38 @@ const WidgetTitle = styled.h3`
   align-items: center;
 `;
 
+const ChartContainer = styled.div`
+  flex-grow: 1;
+  width: 100%;
+  height: 100%; /* Make the chart take up the full height */
+`;
+
 const NewPatientsWidget = ({ width, height }) => {
   const [showPercentage, setShowPercentage] = useState(true);
 
   const patientData = {
     new: 120,
-    old: 180,
+    oldFreshConsultation: 80,
+    oldFollowUp: 100,
   };
 
   // Calculate the total sum for percentage calculation
-  const total = patientData.new + patientData.old;
+  const total = patientData.new + patientData.oldFreshConsultation + patientData.oldFollowUp;
 
-  // Prepare data for the horizontal bar chart
+  // Prepare data for the vertical bar chart
   const data = {
-    labels: ['New Patients', 'Old Patients'],
+    labels: ['New Patients', 'Old Patients (Fresh Consultations)', 'Old Patients (Follow-ups)'],
     datasets: [
       {
         label: showPercentage ? 'Percentage' : 'Number of Patients',
         data: showPercentage
           ? [
               ((patientData.new / total) * 100).toFixed(2),
-              ((patientData.old / total) * 100).toFixed(2),
+              ((patientData.oldFreshConsultation / total) * 100).toFixed(2),
+              ((patientData.oldFollowUp / total) * 100).toFixed(2),
             ]
-          : [patientData.new, patientData.old],
-        backgroundColor: ['#8A2BE2', '#D2691E'], // Purple and chocolate colors
+          : [patientData.new, patientData.oldFreshConsultation, patientData.oldFollowUp],
+        backgroundColor: ['#FF0000', '#4285F4', '#E1306C'], // Using Discovery Widget color scheme: red, blue, pink
         borderRadius: 5,
         barThickness: 30,
       },
@@ -66,7 +77,7 @@ const NewPatientsWidget = ({ width, height }) => {
   };
 
   const options = {
-    indexAxis: 'y', // This makes the bar chart horizontal
+    indexAxis: 'x', // This makes the bar chart vertical
     responsive: true,
     maintainAspectRatio: false,
     scales: {
@@ -123,22 +134,21 @@ const NewPatientsWidget = ({ width, height }) => {
       <WidgetTitle>
         New vs Old Patients
         <div>
-          <span style={{ fontSize: '14px', color: '#ffffff' }}>
-            {showPercentage ? 'Show Actual' : 'Show %'}
-          </span>
           <Switch
             onChange={() => setShowPercentage(!showPercentage)}
             checked={showPercentage}
             offColor="#888"
-            onColor="#8A2BE2" // Purple color for toggle
+            onColor="#FF0000" // Red color for toggle, matching Discovery Widget
             uncheckedIcon={false}
             checkedIcon={false}
+            height={20} /* Adjust the height of the toggle */
+            width={40} /* Adjust the width of the toggle */
           />
         </div>
       </WidgetTitle>
-      <div style={{ height: height ? `calc(${height} - 70px)` : '300px' }}>
+      <ChartContainer>
         <Bar data={data} options={options} />
-      </div>
+      </ChartContainer>
     </WidgetContainer>
   );
 };

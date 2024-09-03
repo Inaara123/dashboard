@@ -9,12 +9,13 @@ const WidgetContainer = styled.div`
   padding: 20px;
   border-radius: 15px;
   color: #fff;
-  width: 300px;
+  width: 250px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 `;
 
 const WidgetTitle = styled.h3`
-  font-size: 18px;
+  font-size: 25px;
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
@@ -25,6 +26,9 @@ const LocationList = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
+  max-height: ${({ expanded }) => (expanded ? '400px' : '300px')}; /* Height adjustment */
+  overflow-y: ${({ expanded }) => (expanded ? 'auto' : 'hidden')}; /* Scrollbar in expanded mode */
+  overflow-x: hidden; /* Remove horizontal scrollbar */
 `;
 
 const LocationItem = styled.li`
@@ -35,6 +39,9 @@ const LocationName = styled.span`
   font-size: 16px;
   display: block;
   margin-bottom: 5px;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Show ellipsis if text overflows */
 `;
 
 const BarContainer = styled.div`
@@ -58,17 +65,54 @@ const LocationCount = styled.span`
   color: #a5a5a5;
 `;
 
+const ShowMoreButton = styled.button`
+  background: none;
+  border: none;
+  color: #66ff66;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+  padding: 0;
+  text-decoration: underline;
+`;
+
+const PopUpContainer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const PopUpContent = styled.div`
+  background-color: #2c2f33;
+  padding: 20px;
+  border-radius: 15px;
+  width: 80%;
+  max-height: 80%;
+  overflow-y: auto;
+`;
+
+const CustomSwitch = styled(Switch)`
+  & .react-switch-bg {
+    width: 10px; /* Make the toggle smaller */
+    height: 15px;
+  }
+  & .react-switch-handle {
+    width: 13px;
+    height: 13px;
+  }
+`;
+
 async function fetchTopLocations(timeRange, customStartDate, customEndDate) {
-    // const hospitalId = '4rGAVPwMavcn6ZXQJSqynPoJKyE3'; // Replace with your hospital ID
-    // const dateRange = '6_months'; // or 'single_day', '1_week', '1_month', '3_months', 'custom'
-    // const doctorId = '0c99dde8-1414-4867-9395-26ffe3355f3f';  // Use null or omit if not filtering by doctor
-    // const customStartDate = null;  // Set to specific date if using 'custom'
-    // const customEndDate = null;
-////////////////////////////////////////////////
     const hospitalId = '4rGAVPwMavcn6ZXQJSqynPoJKyE3';
     const doctorId = '0c99dde8-1414-4867-9395-26ffe3355f3f';
-  
-    // Apply conditional logic to modify timeRange
+
     if (timeRange && timeRange !== 'custom') {
       if (timeRange === '1 Day') {
         timeRange = 'single_day';
@@ -81,45 +125,37 @@ async function fetchTopLocations(timeRange, customStartDate, customEndDate) {
       }
     }
 
-////////////////////////////////////////////////
     const { data, error } = await supabase
     .rpc('get_top_addresses', {
         p_hospital_id: hospitalId,
-        p_doctor_id: doctorId || null,  // Use null if doctorId is not provided
+        p_doctor_id: doctorId || null, 
         p_date_range: timeRange,
         p_custom_start_date: customStartDate || null,
         p_custom_end_date: customEndDate || null,
     });
-  if (error) {
-    console.log('The error while trying to fetch locations is: ', error);
-    return [];
-  }
-  else{
-    console.log('The data while trying to fetch locations is: ', data);
-  }
-  return data;
+  
+    if (error) {
+      console.log('The error while trying to fetch locations is: ', error);
+      return [];
+    } else {
+      console.log('The data while trying to fetch locations is: ', data);
+    }
+    return data;
 }
 
-// Normalize the location name by removing spaces and converting to lowercase
 const normalizeLocationName = (name) => {
-  return name
-    .toLowerCase()      // Convert to lowercase
-    .replace(/\s+/g, '') // Remove all spaces
-    .trim();            // Trim any surrounding whitespace
+  return name.toLowerCase().replace(/\s+/g, '').trim();
 };
 
-// Capitalize the first letter of a string
 const capitalizeFirstLetter = (string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
-// Group locations with normalized names and remove spaces
 const groupLocations = (locations) => {
   const locationMap = new Map();
 
   locations.forEach(({ address, count }) => {
     const normalizedAddress = normalizeLocationName(address);
-
     if (locationMap.has(normalizedAddress)) {
       locationMap.set(normalizedAddress, locationMap.get(normalizedAddress) + count);
     } else {
@@ -127,14 +163,15 @@ const groupLocations = (locations) => {
     }
   });
 
-  // Convert map back to array and sort by count in descending order
   return Array.from(locationMap, ([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count); // Sort by count in descending order
+    .sort((a, b) => b.count - a.count); 
 };
 
-const LocationsWidget = ({timeRange}) => {
+const LocationsWidget = ({ timeRange }) => {
   const [locations, setLocations] = useState([]);
   const [showPercentage, setShowPercentage] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+  const [popUpVisible, setPopUpVisible] = useState(false);
 
   useEffect(() => {
     async function getLocations() {
@@ -155,7 +192,8 @@ const LocationsWidget = ({timeRange}) => {
     getLocations();
   }, [timeRange]);
 
-  // Calculate the total and maximum count for scaling the bars
+  const displayedLocations = expanded ? locations : locations.slice(0, 7);
+
   const total = locations.reduce((sum, location) => sum + location.count, 0);
   const maxCount = Math.max(...locations.map(location => location.count));
 
@@ -163,29 +201,26 @@ const LocationsWidget = ({timeRange}) => {
     <WidgetContainer>
       <WidgetTitle>
         Location
-        <div>
-          <span style={{ fontSize: '14px', color: '#ffffff' }}>
-            {showPercentage ? 'Show Actual' : 'Show %'}
-          </span>
-          <Switch
-            onChange={() => setShowPercentage(!showPercentage)}
-            checked={showPercentage}
-            offColor="#888"
-            onColor="#66ff66"
-            uncheckedIcon={false}
-            checkedIcon={false}
-          />
-        </div>
+        <CustomSwitch
+          onChange={() => setShowPercentage(!showPercentage)}
+          checked={showPercentage}
+          offColor="#888"
+          onColor="#66ff66"
+          uncheckedIcon={false}
+          checkedIcon={false}
+        />
       </WidgetTitle>
       <p>You've had your hospital visits from...</p>
-      <LocationList>
-        {locations.map((location, index) => {
+      <LocationList expanded={expanded}>
+        {displayedLocations.map((location, index) => {
           const percentage = ((location.count / total) * 100).toFixed(2);
           const displayValue = showPercentage ? `${percentage}%` : location.count;
 
+          const firstWords = location.name.split(',').map(word => word.split(' ')[0]).join(', '); // Show only first word
+
           return (
             <LocationItem key={index}>
-              <LocationName>{capitalizeFirstLetter(location.name)}</LocationName>
+              <LocationName>{capitalizeFirstLetter(firstWords)}</LocationName>
               <BarContainer>
                 <Bar percentage={showPercentage ? percentage : (location.count / maxCount) * 100} />
               </BarContainer>
@@ -194,6 +229,39 @@ const LocationsWidget = ({timeRange}) => {
           );
         })}
       </LocationList>
+      {locations.length > 5 && (
+        <ShowMoreButton onClick={() => setPopUpVisible(true)}>
+          Show All
+        </ShowMoreButton>
+      )}
+      {popUpVisible && (
+        <PopUpContainer onClick={() => setPopUpVisible(false)}>
+          <PopUpContent onClick={(e) => e.stopPropagation()}>
+            <h2>All Locations</h2>
+            <LocationList expanded={true}>
+              {locations.map((location, index) => {
+                const percentage = ((location.count / total) * 100).toFixed(2);
+                const displayValue = showPercentage ? `${percentage}%` : location.count;
+
+                const firstWords = location.name.split(',').map(word => word.split(' ')[0]).join(', '); // Show only first word
+
+                return (
+                  <LocationItem key={index}>
+                    <LocationName>{capitalizeFirstLetter(firstWords)}</LocationName>
+                    <BarContainer>
+                      <Bar percentage={showPercentage ? percentage : (location.count / maxCount) * 100} />
+                    </BarContainer>
+                    <LocationCount>{displayValue}</LocationCount>
+                  </LocationItem>
+                );
+              })}
+            </LocationList>
+            <ShowMoreButton onClick={() => setPopUpVisible(false)}>
+              Show Less
+            </ShowMoreButton>
+          </PopUpContent>
+        </PopUpContainer>
+      )}
     </WidgetContainer>
   );
 };

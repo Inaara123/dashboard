@@ -23,27 +23,27 @@ const DashboardContainer = styled.div`
   box-sizing: border-box;
 `;
 
-// Widget container with relative positioning
-const WidgetContainer = styled.div`
-  position: relative;
+// Styled component for the grid layout
+const GridContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(12, 1fr); /* 12-column grid */
+  grid-template-rows: repeat(6, auto); /* Customize row sizes */
+  gap: 10px;
   width: 100%;
-  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
 `;
 
 // Styled component for each widget
-const WidgetArea = styled.div`
-  position: absolute;
-  top: ${({ y }) => y || '0%'};
-  left: ${({ x }) => x || '0%'};
-  width: ${({ width }) => width || '20%'};
-  height: ${({ height }) => height || '20%'};
-  background-color: #2c2f33;
-  border-radius: 10px;
-  padding: 10px;
-  color: #fff;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+const GridItem = styled.div`
+  grid-column: ${({ colStart, colEnd }) => `${colStart} / ${colEnd}`};
+  grid-row: ${({ rowStart, rowEnd }) => `${rowStart} / ${rowEnd}`};
+  padding: 10px; /* Ensure enough padding */
+  box-sizing: border-box; /* Ensure padding and border are included in the grid item's size */
+  overflow: visible; /* Allow the widget to fully display */
 `;
+
+
 
 const DashboardCard = () => {
   const [timeRange, setTimeRange] = useState({
@@ -55,40 +55,29 @@ const DashboardCard = () => {
   return (
     <DashboardContainer>
       <Header timeRange={timeRange} setTimeRange={setTimeRange} />
-      <WidgetContainer>
-        <WidgetArea x="2%" y="5%" width="12%" height="20%">
+      <GridContainer>
+        <GridItem colStart={1} colEnd={3} rowStart={1} rowEnd={3}>
           <VisitsWidget />
-        </WidgetArea>
-        <WidgetArea x="20%" y="5%" width="24%" height="80%">
-        <LocationsWidget timeRange={timeRange} />
-        </WidgetArea>
-        <WidgetArea x="2%" y="30%" width="15%" height="25%">
-          <GenderWidget width={200} height={100} timeRange={timeRange}  />
-        </WidgetArea>
-         <WidgetArea x="47%" y="5%" width="25%" height="50%">
-           <DiscoveryWidget />
-         </WidgetArea>
-
-        <WidgetArea x="47%" y="60%" width="25%" height="50%">
+        </GridItem>
+        <GridItem colStart={3} colEnd={7} rowStart={1} rowEnd={7}>
+          <LocationsWidget timeRange={timeRange} />
+        </GridItem>
+        
+        <GridItem colStart={1} colEnd={5} rowStart={3} rowEnd={25}>
+          <GenderWidget width={200} height={200} timeRange={timeRange} />
+        </GridItem>
+        
+        <GridItem colStart={6} colEnd={9} rowStart={1} rowEnd={5}>
+          <DiscoveryWidget width={150} height={200} />
+        </GridItem>
+        <GridItem colStart={6} colEnd={9} rowStart={5} rowEnd={9}>
           <AgeGroupWidget />
-        </WidgetArea>
-        <WidgetArea x="75%" y="5%" width="20%" height="70%">
-          <NewPatientsWidget />
-        </WidgetArea>
-        {/*
-        <WidgetArea x="5%" y="30%" width="20%" height="25%">
-          <TimeMetricsWidget />
-        </WidgetArea>
-
-        <WidgetArea x="70%" y="30%" width="25%" height="25%">
-          <ReasonWidget />
-        </WidgetArea>
-
-
-        <WidgetArea x="5%" y="85%" width="20%" height="15%">
-          <AttendingModeWidget />
-        </WidgetArea> */}
-      </WidgetContainer>
+        </GridItem>
+        
+        <GridItem colStart={9} colEnd={13} rowStart={1} rowEnd={7}>
+          <NewPatientsWidget width={100} height={150}/>
+        </GridItem> 
+      </GridContainer>
     </DashboardContainer>
   );
 };

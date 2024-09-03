@@ -8,9 +8,15 @@ const WidgetContainer = styled.div`
   padding: 20px;
   border-radius: 15px;
   color: #fff;
-  width: 250px;
+  width: 100%; /* Ensure it fits within its container */
+  max-width: 250px; /* Or set this to the desired width */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box; /* Include padding and border in width calculation */
+  overflow: hidden; /* Ensure no overflow */
+  margin: 0 auto; /* Center within its container if needed */
+  border: 1px solid transparent; /* Adjust this as needed */
 `;
+
 
 const WidgetTitle = styled.h3`
   font-size: 18px;

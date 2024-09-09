@@ -4,7 +4,7 @@ import { HeatMapGrid } from 'react-grid-heatmap';
 import Switch from 'react-switch';
 
 const WidgetContainer = styled.div`
-  background-color: #2c2f33;
+  background-color: #1e1e1e;
   padding: 20px;
   border-radius: 15px;
   color: #fff;
@@ -100,6 +100,7 @@ const GenderVsDiscovery = () => {
               background: `rgba(128, 0, 128, ${Math.min(Math.max(alpha, 0.1), 1)})`, // #007bff with alpha
               fontSize: '0.9rem',
               color: 'white',
+              border: '1px solid #ffffff',
             };
           }}
           cellHeight="5.5rem"

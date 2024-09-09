@@ -4,7 +4,7 @@ import { HeatMapGrid } from 'react-grid-heatmap';
 import Switch from 'react-switch';
 
 const WidgetContainer = styled.div`
-  background-color: #2c2f33;
+  background-color: #1e1e1e;
   padding: 20px;
   border-radius: 15px;
   color: #fff;
@@ -13,6 +13,7 @@ const WidgetContainer = styled.div`
   height: auto;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
+
 `;
 const YLabelContainer = styled.div`
   display: flex;

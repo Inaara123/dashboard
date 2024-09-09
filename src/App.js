@@ -5,6 +5,7 @@ import SearchBar from './components/SearchBar';
 import PatientMap from './components/MapComponent';
 import { useState } from 'react';
 import FilterInputs from './components/InputCorelation';
+import TrendsDashboard from './components/TrendsDashboard';
 import Correlation from './components/Correlation';
 import CorrelationDashboard from './components/CorrelationDashboard';
 
@@ -58,6 +59,9 @@ const App = () => {
           </div>
         <div>
           <CorrelationDashboard/>
+        </div>
+        <div>
+          <TrendsDashboard/>
         </div>
         <div className='corelation'>
         <Correlation/>

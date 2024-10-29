@@ -1,0 +1,65 @@
+/* src/components/Header.css */
+
+.header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradient background */
+    padding: 30px 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Stronger shadow for a lifted effect */
+    max-width: 700px;
+    margin: 30px auto; /* Center align the header with more space around */
+    color: #fff;
+  }
+  
+  .header-title {
+    font-size: 28px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    letter-spacing: 1px; /* Slight spacing for better readability */
+  }
+  
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-select {
+    padding: 12px 18px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    width: 220px;
+    cursor: pointer;
+    background-color: #fff;
+    color: #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    appearance: none;
+  }
+  
+  .dropdown-select:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .dropdown-select:focus {
+    outline: none;
+    border: 2px solid #2575fc; /* Blue border on focus */
+    box-shadow: 0 0 8px rgba(37, 117, 252, 0.5);
+  }
+  
+  .dropdown-select option {
+    padding: 10px;
+  }
+  
+  /* Optional: Add a custom arrow icon */
+  .dropdown::after {
+    content: '▼';
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 14px;
+    color: #333;
+  }
+  

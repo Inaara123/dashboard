@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styled from 'styled-components';
 import CustomFields from './CustomFields'; // Import the CustomFields component
-
+import { supabase } from '../supabaseClient';
 const Container = styled.div`
   padding: 20px;
   color: #ffffff;
@@ -53,22 +53,92 @@ const DatePickerStyled = styled(DatePicker)`
   padding: 10px;
   border-radius: 5px;
 `;
-
-const Correlation = ({selectedDoctorId,hospitalId}) => {
-  
+const DoctorSelect = styled.select`
+  background-color: #333333;
+  color: #ffffff;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 1rem;
+`;
+const Correlation = ({hospitalId}) => {
+  const [administratorName, setAdministratorName] = useState('all');
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [selectedRange, setSelectedRange] = useState('single_day');
+  const [selectedDoctor, setSelectedDoctor] = useState('all');
+  const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+  const [doctors, setDoctors] = useState([]);
+  const [dispname,setdispname]=useState('all');
+  const fetchDoctorsData = async () => {
+    const { data, error } = await supabase
+      .rpc('get_administrator_and_doctors', { hospitals_id: hospitalId });
 
+    if (error) {
+      console.error('Error fetching data:', error);
+      return;
+    }
+
+    // Assuming that all records have the same administrator name
+    if (data && data.length > 0) {
+      setAdministratorName('All Doctors');
+      setdispname('All Doctors');
+    }
+
+    // Map doctors from the fetched data
+    const fetchedDoctors = data.map((record) => ({
+      id: record.doctor_id,
+      name: record.doctor_name.trim(),
+    }));
+
+    setDoctors(fetchedDoctors);
+  };
+  useEffect(() => {
+    fetchDoctorsData();
+  }, []);
+
+  const handleDoctorChange = (e) => {
+    const newValue = e.target.value;
+    setSelectedDoctor(e.target.value);
+    
+    if (newValue === 'all') {
+      // If "administrator" is selected, set selectedDoctorId to null
+      setSelectedDoctorId(null);
+      setdispname('All Doctors');
+    } else {
+      setdispname(e.target.value);
+      // Find the doctor from the list by matching the selected name
+      const doctor = doctors.find((doc) => doc.name === newValue);
+      // Set selectedDoctorId to the found doctor's id
+      setSelectedDoctorId(doctor?.id || null);
+      
+    }
+    console.log('doctor selected',newValue);
+    console.log('the doctor_id',selectedDoctorId);
+  };
   const handleRangeSelect = (range) => {
     
     setSelectedRange(range);
   };
 
+  
+
   return (
     <Container>
       <Title>Deeper Insights</Title>
       <HeaderBar>
+      <DoctorSelect
+          value={selectedDoctor}
+          onChange={handleDoctorChange}
+          className="dropdown-select"
+        >
+          <option value="all">{administratorName}</option>
+          {doctors.map((doctor) => (
+            <option key={doctor.id} value={doctor.name}>
+              {doctor.name}
+            </option>
+          ))}
+        </DoctorSelect>
         <Button active={selectedRange === 'single_day'} onClick={() => handleRangeSelect('single_day')}>
           1 Day
         </Button>
@@ -99,7 +169,7 @@ const Correlation = ({selectedDoctorId,hospitalId}) => {
         </DateContainer>
       </HeaderBar>
 
-      <CustomFields hospitalId={hospitalId}  selectedDoctorId= {selectedDoctorId} startDate={startDate} endDate={endDate} selectedRange={selectedRange} setSelectedRange={setSelectedRange}  />
+      <CustomFields hospitalId={hospitalId}  selectedDoctorId={selectedDoctorId} startDate={startDate} endDate={endDate} selectedRange={selectedRange} setSelectedRange={setSelectedRange}  />
     </Container>
   );
 };

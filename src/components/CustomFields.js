@@ -105,20 +105,11 @@ const ComparisonContainer = styled.div`
   align-items: center;
 `;
 
-const CorrelationContainer = styled.div`
-  flex: 0.3;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  margin-left: 20px;
-`;
 // Define your CustomFields component
 const CustomFields = ({ hospitalId,selectedDoctorId, selectedRange, setSelectedRange,startDate, endDate,width,height }) => {
   
   const [fields, setFields] = useState([]);
   const [comparisonField, setComparisonField] = useState('none');
-  const [correlationField, setCorrelationField] = useState('none');
   const [data, setData] = useState([]); // Data fetched from Supabase
   const [locations, setLocations] = useState(['All']); // State for unique locations
   const [showPercentage, setShowPercentage] = useState(true);
@@ -137,7 +128,6 @@ const CustomFields = ({ hospitalId,selectedDoctorId, selectedRange, setSelectedR
       console.error('Error fetching locations:', error);
       return;
     }    
-    console.log('locations unique',locationsData);
     const uniqueLocations = locationsData.map((item) => item.main_area);
     
     setLocations(['All', ...uniqueLocations]);
@@ -177,14 +167,12 @@ const CustomFields = ({ hospitalId,selectedDoctorId, selectedRange, setSelectedR
         p_age_max:max_age ?? null,
         p_doctor_id:selectedDoctorId,
         p_day_of_week:selectedFields.find((ele) => ele.name === "day_of_week")?.value ?? null,
-        p_start_date:null,
-        p_end_date:null,
+        p_start_date:startDate,
+        p_end_date:endDate,
         p_gender:selectedFields.find((ele) => ele.name === "gender")?.value ?? null,
         p_type: selectedFields.find((ele) => ele.name === "appointment_type")?.value ?? null,
         p_time_range:selectedRange,
         p_day_of_week:selectedFields.find((ele) => ele.name === "weekdayWeekend")?.value ?? null
-        // start_date: startDate.toISOString(), // start date from state
-        // end_date: endDate.toISOString(), // end date from state
       });
   
       if (error) {
@@ -192,10 +180,6 @@ const CustomFields = ({ hospitalId,selectedDoctorId, selectedRange, setSelectedR
         setData([]); // Clear data if error occurs
         return;
       }
-  
-      // Set the filtered data
-      
-      console.log(data);
       setData(data);
     } catch (err) {
       console.error('Error fetching filtered data:', err);
@@ -228,12 +212,12 @@ const CustomFields = ({ hospitalId,selectedDoctorId, selectedRange, setSelectedR
 
   const fetchPatientComparison = async () => {
     setLoading(true); // Start loading
-    console.log('check');
+
     setPatientData([]);
    
     try {
       // Replace 'hospital_id' and '1_month' with your actual parameters
-      console.log('selected range is',selectedRange);
+ 
       console.log(comparisonField == "discoveryChannel" ? 'how_did_you_get_to_know_us': comparisonField === "location" ? 'main_area' : comparisonField);
       const selectedAgeRange = fields.find((ele) => ele.name === 'age');
       const max_age = (selectedAgeRange?.value === 'between' || selectedAgeRange?.value === 'above') ? selectedAgeRange?.rangeEnd : null;
@@ -241,8 +225,8 @@ const CustomFields = ({ hospitalId,selectedDoctorId, selectedRange, setSelectedR
       const { data, error } = await supabase.rpc('patient_discovery_count_dynamic', {
         p_group_by:comparisonField == "discoveryChannel" ? 'how_did_you_get_to_know_us': comparisonField === "location" ? 'main_area' : comparisonField === "weekdayWeekend" ? 'day_of_week' :comparisonField,
         p_secondary_group_by:comparisonField == "discoveryChannel" ? 'how_did_you_get_to_know_us': comparisonField === "location" ? 'main_area' : comparisonField=== "weekdayWeekend" ? 'day_of_week' :comparisonField,//fields.find((item) => item.name === 'location') ? "main_area" : null,
-        p_start_date: null, // Use actual UUID
-        p_end_date: null,
+        p_start_date: startDate, // Use actual UUID
+        p_end_date: endDate,
         p_gender:fields.find((item) => item.name === 'gender')?.value|| null,
         p_address: fields.find((item) => item.name === 'location')?.value|| null,
         p_min_age:min_age,
@@ -253,7 +237,7 @@ const CustomFields = ({ hospitalId,selectedDoctorId, selectedRange, setSelectedR
         p_doctor_id:selectedDoctorId
       });
 
-      console.log('Fetch comparision Pateint Data:',data)
+
       if (error) {
         console.error('Error fetching patient growth stats:', error.message);
         setLoading(false); // Stop loading in case of error
@@ -277,7 +261,7 @@ const CustomFields = ({ hospitalId,selectedDoctorId, selectedRange, setSelectedR
     if (comparisonField !== 'none' && fields.length > 0) {
       fetchPatientComparison(comparisonField, fields);
     } // Fetch data on component mount
-  }, [comparisonField,selectedRange]);
+  }, [comparisonField,selectedRange,startDate,endDate]);
   
   const isWeekdayComparison = comparisonField === "weekdayWeekend";
   const labels = isWeekdayComparison
@@ -285,9 +269,7 @@ const CustomFields = ({ hospitalId,selectedDoctorId, selectedRange, setSelectedR
   Object.keys(patientData).map(label => 
     label.replace('ageRange', '').replace('_', '-')
   );
- 
-  console.log('labela',labels);
-  console.log('the patient datas',patientData);
+
   const total = Object.values(patientData).reduce((acc, count) => acc + count, 0);
 
   const weekendCount = isWeekdayComparison
@@ -394,15 +376,12 @@ const CustomFields = ({ hospitalId,selectedDoctorId, selectedRange, setSelectedR
 
   const availableOptions = filterOptions.filter(
     (option) =>
-      !fields.some((field) => field.name === option.value) &&
-      option.value !== comparisonField &&
-      option.value !== correlationField
+      !fields.some((field) => field.name === option.value) 
   );
 
   const availableComparisonOptions = filterOptions.filter(
     (option) =>
-      !fields.some((field) => field.name === option.value) &&
-      option.value !== correlationField
+      !fields.some((field) => field.name === option.value) 
   );
 
 
